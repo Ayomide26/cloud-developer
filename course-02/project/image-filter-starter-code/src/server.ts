@@ -1,4 +1,5 @@
-import express from 'express';
+
+import express, { NextFunction, Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
@@ -10,11 +11,27 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   // Set the network port
   const port = process.env.PORT || 8082;
   
+
   // Use the body parser middleware for post requests
   app.use(bodyParser.json());
 
   // @TODO1 IMPLEMENT A RESTFUL ENDPOINT
   // GET /filteredimage?image_url={{URL}}
+  app.get('/filteredimage', async (req: Request, res: Response)=>{
+    const image_url = req.query.image_url;
+    // res.status(200).json({message: "Created", image_url:"https://images.all-free-download.com/images/wallpapers_thum/balloon_night_wallpaper_photo_manipulated_nature_wallpaper_1123.jpg"})
+//  task
+    if (!image_url) {
+      res.status(400).send("Image URL !empty");
+      return;
+    }
+    const imageFile: string = await filterImageFromURL(image_url);
+    res.sendFile(imageFile);
+    res.on("finish", () => deleteLocalFiles([imageFile]));
+  });
+  // })
+
+  
   // endpoint to filter an image from a public url.
   // IT SHOULD
   //    1
@@ -33,7 +50,7 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   
   // Root Endpoint
   // Displays a simple message to the user
-  app.get( "/", async ( req, res ) => {
+  app.get( "/", async ( req:Request, res:Response ) => {
     res.send("try GET /filteredimage?image_url={{}}")
   } );
   
